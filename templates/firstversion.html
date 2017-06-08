@@ -10,7 +10,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='mapapi.js') }}"></script>
     <script async defer
-            src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY&callback=initMap">
+            src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDGI4r2WScjBuwyaeV9b-NFRSHcoqczNa4&callback=initMap">
     </script>
 
     <style>
@@ -21,23 +21,133 @@
         }
     </style>
 
+{#    <script type="text/javascript" charset="utf-8">#}
+{#        #}
+{#        function GetURL(url) {#}
+{##}
+{#            var Httpreq = new XMLHttpRequest();#}
+{#            Httpreq.open("GET", url, true);#}
+{#            Httpreq.send();#}
+{#            return Httpreq.responseText;#}
+{##}
+{##}
+{#        }#}
+{#        #}
+{#    </script>#}
+
+{#    <script type="text/javascript" charset="utf-8">#}
+{##}
+{#        var json_data = $.get('http://localhost:8000/realtime-data/?format=json&start_time=2017-05-26T19:35:11.994156Z');#}
+{##}
+{#        console.log(json_data);#}
+{#       var dat = JSON.parse(json_data.responseText[1]);#}
+{#        console.log(dat);#}
+{##}
+{##}
+{#            console.log(more_json_data);#}
+{#        #}
+{##}
+{#    </script>#}
+
     <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+
+
+
+
+
+
     <script type="text/javascript" charset="utf-8">
         var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+
+        var driverPositions = {};
+
         socket.on('location', function(msg) {
-        console.log(msg);
-           var marker = new google.maps.Marker({
-            position: {'lat': msg.lat, 'lng': msg.lng},
-            map: map,
-            text: {'driver_id': msg.driver_id}
+
+            var driver_color;
+
+            if(msg.driver_type=='green' || msg.driver_type == 'GREEN')
+                driver_color = '#31D35B';
+
+            else if(msg.driver_type=='yellow' || msg.driver_type == 'YELLOW')
+                driver_color = '#F3F409';
+
+            else if(msg.driver_type == 'uber' || msg.driver_type == 'UBER')
+                driver_color = '#09A2F4';
+
+            else if (msg.driver_type == 'lyft' || msg.driver_type == 'LYFT')
+                driver_color = '#EB45B9';
+
+            else
+                driver_color = '#000000';
+
+            function getRandomColor() {
+                var letters = '0123456789ABCDEF';
+                var color = '#';
+                for (var i = 0; i < 6; i++ ) {
+                    color += letters[Math.floor(Math.random() * 16)];
+
+                }
+        return color;
+    }
+
+
+          console.log(msg);
+          var position = new google.maps.LatLng(msg.lat, msg.lng);
+          var lineSymbol = {
+                                path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                                fillColor: driver_color,
+                                strokeColor: driver_color,
+                                fillOpacity: 1.0
+                            };
+
+          var startSymbol = {
+                                path: google.maps.SymbolPath.CIRCLE,
+                                fillColor: '#119EFF',
+                                scaledSize: new google.maps.Size(22,22),
+                                strokeColor:'#000000',
+                                fillOpacity: 1.0,
+                                scale: 2
+                            };
+
+          if (driverPositions[msg.driver_id]) {
+            driverPositions[msg.driver_id].marker.setMap(null);
+            driverPositions[msg.driver_id].polyline.getPath().push(position);
+          }
+
+          else {
+              var linecolor = getRandomColor();
+            driverPositions[msg.driver_id] = {
+
+              marker: new google.maps.Marker({
+                position: position,
+                map: map,
+                title: {'driver_id': msg.driver_id},
+                icon: lineSymbol
+
+              }),
+
+                polyline: new google.maps.Polyline({
+                path: [position],
+                map: map,
+                icons: [{
+                            icon: lineSymbol,
+                            offset: '100%'
+
+                        }],
+                strokeColor: linecolor,
+                strokeOpacity: 0.0,
+                strokeWeight: 2
+              })
+            }
+          }
+
+          console.log(driverPositions)
         });
-    });
-        
-        socket.on('disconnect', function (msg) {
-            
-        })
+
 
 </script>
+
 </head>
 <body>
     <div id='map'></div>

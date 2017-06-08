@@ -33,8 +33,8 @@ function getCircle(magnitude,color) {
 function initMap() {
 
     var mapOptions = {
-        zoom: 4,
-        center: {lat: -25.363, lng: 131.044},
+        zoom: 2,
+        center: {lat: 40.7128, lng: 74.0059},
         styles:[
   {
     "elementType": "geometry",

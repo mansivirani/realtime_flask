@@ -23,7 +23,8 @@ def send_data_to_producer():
     lat = float(data1.get('lat'))
     lng = float(data1.get('lng'))
     driver_id=data1.get('driver_id')
-    loc_and_id = {'lat': lat, 'lng': lng, 'driver_id': driver_id}
+    driver_type=data1.get('driver_type')
+    loc_and_id = {'lat': lat, 'lng': lng, 'driver_id': driver_id, 'driver_type': driver_type}
     # print(lat)
 
 
